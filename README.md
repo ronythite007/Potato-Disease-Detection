@@ -51,17 +51,17 @@ The dataset used for this project is the [**PlantVillage Dataset**](https://www.
 git clone https://github.com/yourusername/potato-disease-detection.git
 cd potato-disease-detection
 
-### 2. Install Dependencies
+2. Install Dependencies
 Copy
 Edit
 pip install -r requirements.txt
 
-### 3. Train the Model
+3. Train the Model
 Copy
 Edit
 python train.py
 
-### 4. Make Predictions
+4. Make Predictions
 Copy
 Edit
 python predict.py --image path_to_leaf_image.jpg
