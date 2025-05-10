@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Image for Prediction</title>
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 550px;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .container:hover {
+      transform: scale(1.03);
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .drop-zone {
+      width: 100%;
+      height: 250px;
+      border: 2px dashed #6c5ce7;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: #6c5ce7;
+      font-size: 18px;
+      font-weight: 500;
+      background-color: #f8f9fa;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .drop-zone:hover {
+      background-color: #f1f1f1;
+      border-color: #6c5ce7;
+    }
+
+    .drop-zone:active {
+      background-color: #e6e6e6;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .prediction-result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+      font-weight: 500;
+      transition: opacity 0.3s ease;
+    }
+
+    .prediction-result span {
+      font-size: 20px;
+      font-weight: bold;
+      color: #6c5ce7;
+    }
+
+    /* Add animation for prediction result */
+    .prediction-result.success {
+      color: #28a745;
+    }
+
+    .prediction-result.error {
+      color: #dc3545;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        width: 90%;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .drop-zone {
+        height: 200px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <h1>Upload Image for Prediction</h1>
+    <div class="drop-zone" id="dropZone">
+      <span>Drag and drop an image here or click to select</span>
+      <input type="file" id="fileInput" name="file" accept="image/*" class="file-input" required />
+    </div>
+
+    <div id="predictionResult" class="prediction-result"></div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const predictionResult = document.getElementById('predictionResult');
+
+    // Function to handle file input or drop event
+    const handleFileSelect = async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/predict/', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch prediction');
+        }
+
+        const result = await response.json();
+        predictionResult.classList.remove('error');
+        predictionResult.classList.add('success');
+        predictionResult.textContent = `Predicted Class: ${result.predicted_class} with Confidence: ${result.confidence.toFixed(2)}%`;
+      } catch (error) {
+        console.error('Error occurred:', error);
+        predictionResult.classList.remove('success');
+        predictionResult.classList.add('error');
+        predictionResult.textContent = 'Error occurred while making the prediction.';
+      }
+    };
+
+    // Click event for drop zone
+    dropZone.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // File drop event
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.backgroundColor = '#f1f1f1';
+      dropZone.style.borderColor = '#6c5ce7';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.backgroundColor = '#f8f9fa';
+      dropZone.style.borderColor = '#6c5ce7';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.backgroundColor = '#f8f9fa';
+      dropZone.style.borderColor = '#6c5ce7';
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        handleFileSelect(file);
+      }
+    });
+
+    // File select event
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        handleFileSelect(file);
+      }
+    });
+  </script>
+
+</body>
+</html>
